@@ -100,18 +100,17 @@ function App() {
   const [copiedParsed, setCopiedParsed] = useState(false);
   const [splitRatio, setSplitRatio] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
-  const [syncScroll, setSyncScroll] = useState(true);
   const panelsRef = useRef(null);
   const originalEditorRef = useRef(null);
   const parsedEditorRef = useRef(null);
-  const isScrolling = useRef(false);
 
   const parsedStr = JSON.stringify(parsed, null, 2);
   
   // Build line mapping for parsed editor
   const lineMapping = useMemo(() => buildLineMapping(input, parsedStr), [input, parsedStr]);
 
-  const handleParse = useCallback(() => {
+  // Auto-parse whenever input changes
+  useEffect(() => {
     try {
       const obj = JSON.parse(input);
       setParsed(parseNestedJson(obj));
@@ -120,18 +119,6 @@ function App() {
       setError(e.message);
     }
   }, [input]);
-
-  // Global keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault();
-        handleParse();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleParse]);
 
   // Resizable split
   const handleMouseDown = useCallback((e) => {
@@ -163,16 +150,17 @@ function App() {
     setTimeout(() => setCopied(false), 1500);
   }, []);
 
+  const handleFormatOriginal = useCallback(() => {
+    try {
+      const formatted = JSON.stringify(JSON.parse(input), null, 2);
+      setInput(formatted);
+    } catch {
+      // Invalid JSON, do nothing
+    }
+  }, [input]);
+
   const handleOriginalMount = (editor, monaco) => {
     originalEditorRef.current = editor;
-    
-    // Scroll sync from original to parsed
-    editor.onDidScrollChange((e) => {
-      if (!syncScroll || isScrolling.current || !parsedEditorRef.current) return;
-      isScrolling.current = true;
-      parsedEditorRef.current.setScrollTop(e.scrollTop);
-      setTimeout(() => { isScrolling.current = false; }, 50);
-    });
     
     monaco.editor.defineTheme('json-dark', {
       base: 'vs-dark',
@@ -191,6 +179,8 @@ function App() {
         'editor.selectionBackground': '#264f78',
         'editorGutter.background': '#080808',
         'editorIndentGuide.background': '#1a1a1a',
+        'editorBracketMatch.background': '#1a1a1a',
+        'editorBracketMatch.border': '#3a3a3a',
       }
     });
     monaco.editor.setTheme('json-dark');
@@ -206,14 +196,6 @@ function App() {
         return origLine ? `${origLine}` : `${lineNumber}`;
       },
       lineNumbersMinChars: 4,
-    });
-    
-    // Scroll sync from parsed to original
-    editor.onDidScrollChange((e) => {
-      if (!syncScroll || isScrolling.current || !originalEditorRef.current) return;
-      isScrolling.current = true;
-      originalEditorRef.current.setScrollTop(e.scrollTop);
-      setTimeout(() => { isScrolling.current = false; }, 50);
     });
     
     monaco.editor.defineTheme('json-dark-parsed', {
@@ -233,6 +215,8 @@ function App() {
         'editor.selectionBackground': '#264f78',
         'editorGutter.background': '#080808',
         'editorIndentGuide.background': '#1a1a1a',
+        'editorBracketMatch.background': '#1a1a1a',
+        'editorBracketMatch.border': '#3a3a3a',
       }
     });
     monaco.editor.setTheme('json-dark-parsed');
@@ -254,16 +238,8 @@ function App() {
     <div className="app">
       <div className="toolbar">
         <span className="toolbar-title">
-          JSON Diff<kbd>⌘↵ parse</kbd>
+          JSON Diff
         </span>
-
-        <button 
-          className={`btn btn-small ${syncScroll ? 'active' : ''}`} 
-          onClick={() => setSyncScroll(!syncScroll)}
-          title="Sync scroll between panels"
-        >
-          {syncScroll ? '🔗' : '🔓'}
-        </button>
 
         <div className="view-tabs">
           <button className={`btn ${view === 'original' ? 'active' : ''}`} onClick={() => setView('original')}>
@@ -276,10 +252,6 @@ function App() {
             Parsed
           </button>
         </div>
-
-        <button className="btn btn-primary" onClick={handleParse}>
-          Parse
-        </button>
       </div>
 
       {error && <div className="error-bar">Error: {error}</div>}
@@ -294,6 +266,13 @@ function App() {
           >
             <div className="panel-header">
               <span className="panel-label">Original (Input)</span>
+              <button 
+                className="btn btn-small"
+                onClick={handleFormatOriginal}
+                title="Format original JSON"
+              >
+                Format
+              </button>
               <button 
                 className={`btn ${copiedOrig ? 'copied' : ''}`} 
                 onClick={() => copy(input, setCopiedOrig)}

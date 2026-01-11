@@ -223,6 +223,10 @@ html, body, #root {
 }
 
 .panel-header .btn {
+  margin-left: 0;
+}
+
+.panel-header .btn:first-of-type {
   margin-left: auto;
 }
 
