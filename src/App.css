@@ -124,6 +124,22 @@ html, body, #root {
   background: #222;
 }
 
+.github-link {
+  display: flex;
+  align-items: center;
+  color: #999;
+  text-decoration: none;
+  margin-left: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.github-link:hover {
+  color: #e0e0e0;
+  background: #1a1a1a;
+}
+
 .btn-primary {
   background: #1a73e8;
   border-color: #1a73e8;

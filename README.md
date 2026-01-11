@@ -1,68 +1,43 @@
-# JSON Viewer App
+# JSON String Formatter
 
-A lightweight React app that parses and displays nested JSON data with syntax highlighting and copy functionality.
+A lightweight React app that parses nested JSON strings and displays formatted JSON with syntax highlighting.
 
-## Features
+## Example
 
-- 📄 **Parsed JSON View** - Automatically converts all nested JSON strings into proper JSON objects
-- 📋 **Raw JSON View** - View the original data with JSON strings intact
-- 🎨 **Syntax Highlighting** - Color-coded JSON elements for better readability
-- 📋 **Copy to Clipboard** - One-click copy functionality
-- 🔽 **Collapsible Sections** - Click on brackets to expand/collapse objects and arrays
-- 📱 **Responsive Design** - Works on desktop and mobile devices
-
-## Installation
-
-1. Install dependencies:
-```bash
-npm install
+Input:
+```json
+{
+  "data": "{\"name\":\"John\",\"age\":30}"
+}
 ```
 
-2. Start the development server:
+Output:
+```json
+{
+  "data": {
+    "name": "John",
+    "age": 30
+  }
+}
+```
+
+## Quick Start
+
 ```bash
+npm install
 npm run dev
 ```
 
-3. Open your browser and navigate to the URL shown in the terminal (typically `http://localhost:5173`)
+## Features
 
-## Usage
+- Parse nested JSON strings automatically
+- Syntax highlighting with Monaco Editor
+- Split view to compare original vs parsed
+- Copy to clipboard
+- Resizable panels
 
-- Toggle between **Parsed JSON** and **Raw JSON** views using the buttons at the top
-- Click on `{` or `[` brackets to collapse/expand sections
-- Click the **Copy JSON** button to copy the current view to clipboard
-
-## Technology Stack
-
-- React 18
-- Vite
-- Pure CSS (no heavy UI libraries)
-
-## File Structure
-
-```
-├── index.html
-├── package.json
-├── vite.config.js
-├── src/
-│   ├── main.jsx
-│   ├── App.jsx
-│   ├── App.css
-│   ├── index.css
-│   └── components/
-│       ├── JsonViewer.jsx
-│       └── JsonViewer.css
-```
-
-## Build for Production
+## Build
 
 ```bash
 npm run build
-```
-
-The built files will be in the `dist/` directory.
-
-## Preview Production Build
-
-```bash
-npm run preview
 ```
