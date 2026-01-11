@@ -60,36 +60,7 @@ function buildLineMapping(originalStr, parsedStr) {
   return mapping;
 }
 
-// Monaco Editor options
-const editorOptions = {
-  readOnly: true,
-  minimap: { enabled: false },
-  fontSize: 12,
-  lineNumbers: 'on',
-  folding: true,
-  foldingStrategy: 'indentation',
-  scrollBeyondLastLine: false,
-  wordWrap: 'off',
-  automaticLayout: true,
-  scrollbar: {
-    vertical: 'auto',
-    horizontal: 'auto',
-    verticalScrollbarSize: 8,
-    horizontalScrollbarSize: 8,
-  },
-  padding: { top: 8, bottom: 8 },
-  renderLineHighlight: 'none',
-  guides: {
-    indentation: true,
-    bracketPairs: false,
-  },
-};
-
-const inputEditorOptions = {
-  ...editorOptions,
-  readOnly: false,
-  lineNumbers: 'on',
-};
+// Monaco Editor options - now moved inside component to use state
 
 function App() {
   const [input, setInput] = useState(JSON.stringify(sampleData, null, 2));
@@ -98,16 +69,72 @@ function App() {
   const [view, setView] = useState('split');
   const [copiedOrig, setCopiedOrig] = useState(false);
   const [copiedParsed, setCopiedParsed] = useState(false);
-  const [splitRatio, setSplitRatio] = useState(50);
+  const [splitRatio, setSplitRatio] = useState(() => {
+    const saved = localStorage.getItem('splitRatio');
+    return saved ? Number(saved) : 50;
+  });
   const [isDragging, setIsDragging] = useState(false);
+  const [tabSize, setTabSize] = useState(() => {
+    const saved = localStorage.getItem('tabSize');
+    return saved ? Number(saved) : 4;
+  });
+  const [fontSize, setFontSize] = useState(() => {
+    const saved = localStorage.getItem('fontSize');
+    return saved ? Number(saved) : 14;
+  });
   const panelsRef = useRef(null);
   const originalEditorRef = useRef(null);
   const parsedEditorRef = useRef(null);
+  // Monaco Editor options with dynamic fontSize
+  const editorOptions = useMemo(() => ({
+    readOnly: true,
+    minimap: { enabled: false },
+    fontSize: fontSize,
+    tabSize: tabSize,
+    lineNumbers: 'on',
+    folding: true,
+    foldingStrategy: 'indentation',
+    scrollBeyondLastLine: false,
+    wordWrap: 'off',
+    automaticLayout: true,
+    scrollbar: {
+      vertical: 'auto',
+      horizontal: 'auto',
+      verticalScrollbarSize: 8,
+      horizontalScrollbarSize: 8,
+    },
+    padding: { top: 8, bottom: 8 },
+    renderLineHighlight: 'none',
+    guides: {
+      indentation: true,
+      bracketPairs: false,
+    },
+  }), [fontSize, tabSize]);
 
-  const parsedStr = JSON.stringify(parsed, null, 2);
+  const inputEditorOptions = useMemo(() => ({
+    ...editorOptions,
+    readOnly: false,
+    lineNumbers: 'on',
+  }), [editorOptions]);
+  const parsedStr = JSON.stringify(parsed, null, tabSize);
   
   // Build line mapping for parsed editor
   const lineMapping = useMemo(() => buildLineMapping(input, parsedStr), [input, parsedStr]);
+
+  // Save tab size to local storage
+  useEffect(() => {
+    localStorage.setItem('tabSize', tabSize);
+  }, [tabSize]);
+
+  // Save font size to local storage
+  useEffect(() => {
+    localStorage.setItem('fontSize', fontSize);
+  }, [fontSize]);
+
+  // Save split ratio to local storage
+  useEffect(() => {
+    localStorage.setItem('splitRatio', splitRatio);
+  }, [splitRatio]);
 
   // Auto-parse whenever input changes
   useEffect(() => {
@@ -152,7 +179,7 @@ function App() {
 
   const handleFormatOriginal = useCallback(() => {
     try {
-      const formatted = JSON.stringify(JSON.parse(input), null, 2);
+      const formatted = JSON.stringify(JSON.parse(input), null, tabSize);
       setInput(formatted);
       
       // Reset cursor and scroll position to top-left after formatting
@@ -171,7 +198,7 @@ function App() {
     } catch {
       // Invalid JSON, do nothing
     }
-  }, [input]);
+  }, [input, tabSize]);
 
   const handleOriginalMount = (editor, monaco) => {
     originalEditorRef.current = editor;
@@ -254,6 +281,39 @@ function App() {
         <span className="toolbar-title">
           JSON Diff
         </span>
+
+        <div className="toolbar-controls">
+          <div className="control-group">
+            <label htmlFor="tab-size">Tab Size:</label>
+            <select 
+              id="tab-size"
+              value={tabSize} 
+              onChange={(e) => setTabSize(Number(e.target.value))}
+              className="select"
+            >
+              <option value={2}>2</option>
+              <option value={4}>4</option>
+              <option value={8}>8</option>
+            </select>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="font-size">Text Size:</label>
+            <select 
+              id="font-size"
+              value={fontSize} 
+              onChange={(e) => setFontSize(Number(e.target.value))}
+              className="select"
+            >
+              <option value={10}>10px</option>
+              <option value={12}>12px</option>
+              <option value={14}>14px</option>
+              <option value={16}>16px</option>
+              <option value={18}>18px</option>
+              <option value={20}>20px</option>
+            </select>
+          </div>
+        </div>
 
         <div className="view-tabs">
           <button className={`btn ${view === 'original' ? 'active' : ''}`} onClick={() => setView('original')}>

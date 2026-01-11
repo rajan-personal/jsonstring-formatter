@@ -39,7 +39,46 @@ html, body, #root {
   font-size: 13px;
   font-weight: 500;
   color: #888;
-  margin-right: auto;
+}
+
+.toolbar-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-group label {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.select {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.1s ease;
+}
+
+.select:hover {
+  border-color: #555;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #1a73e8;
 }
 
 .toolbar-title kbd {
