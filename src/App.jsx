@@ -154,6 +154,20 @@ function App() {
     try {
       const formatted = JSON.stringify(JSON.parse(input), null, 2);
       setInput(formatted);
+      
+      // Reset cursor and scroll position to top-left after formatting
+      setTimeout(() => {
+        if (originalEditorRef.current) {
+          const editor = originalEditorRef.current;
+          // Set cursor to position (1,1) - top left
+          editor.setPosition({ lineNumber: 1, column: 1 });
+          // Scroll to top
+          editor.setScrollTop(0);
+          editor.setScrollLeft(0);
+          // Reveal the position to ensure it's visible
+          editor.revealPosition({ lineNumber: 1, column: 1 });
+        }
+      }, 0);
     } catch {
       // Invalid JSON, do nothing
     }
